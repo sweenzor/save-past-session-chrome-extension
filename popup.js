@@ -16,23 +16,11 @@ function pad(num, size) {
 
 
 function formattedDate(date) {
-
-    var dayOfWeekNames = [
-        "Sun",
-        "Mon",
-        "Tue",
-        "Wed",
-        "Thu",
-        "Fri",
-        "Sat"
-    ]
-
     var day = date.getDate();
     var month = date.getMonth() + 1;
     var year = date.getFullYear();
-    var dayOfWeek = date.getDay();
 
-    return year + "-" + pad(month, 2) + "-" + pad(day, 2) + " (" + dayOfWeekNames[dayOfWeek] + ")";
+    return year + "-" + pad(month, 2) + "-" + pad(day, 2);
 }
 
 
@@ -47,7 +35,7 @@ function bookmarkTabs(windows, sessionFolder, windowFolder) {
 
     chrome.tabs.query({ windowId: win.id }, function (arrayOfTabs) {
 
-        // create bookmarks for tabs in window
+        // Create bookmarks for tabs in window
         for (var i = 0; i < arrayOfTabs.length; i++) {
             chrome.bookmarks.create(
                 {
@@ -58,7 +46,7 @@ function bookmarkTabs(windows, sessionFolder, windowFolder) {
             );
         }
 
-        log("bookmarked " + arrayOfTabs.length + " tabs for " + windowFolder.title);
+        log("Bookmarked " + arrayOfTabs.length + " tabs for " + windowFolder.title);
 
         if (windows.length == 1) {
 
@@ -77,12 +65,11 @@ function bookmarkTabs(windows, sessionFolder, windowFolder) {
 function createWindowFolders(windows, sessionFolder) {
 
     var win = windows[0];
-    var myTitle = "Window " + String(win.id);
+    var windowTitle = "Window " + String(win.id);
 
     chrome.bookmarks.create(
-        { "parentId": sessionFolder.id, "title": myTitle },
+        { "parentId": sessionFolder.id, "title": windowTitle },
         function (windowFolder) {
-            // log("    created folder " + myTitle)
             bookmarkTabs(windows, sessionFolder, windowFolder);
         }
     );
@@ -99,18 +86,18 @@ function getAllWindows(yearFolder) {
 
 function createSessionFolder(yearFolder) {
 
-    var myTitle = formattedDate(date) + " Session";
+    var folderTitle = formattedDate(date);
 
     // Get the current session folder
-    chrome.bookmarks.search({ title: myTitle, "url": undefined }, function (results) {
+    chrome.bookmarks.search({ title: folderTitle, "url": undefined }, function (results) {
 
         if (results.length == 0) {
 
-            // create current session folder
-            log("current session folder doesn't exist. Creating...")
+            // Create current session folder
+            log("Current session folder doesn't exist. Creating...")
 
             chrome.bookmarks.create(
-                { "parentId": yearFolder.id, "title": myTitle },
+                { "parentId": yearFolder.id, "title": folderTitle },
                 getAllWindows
             );
 
@@ -124,53 +111,24 @@ function createSessionFolder(yearFolder) {
 }
 
 
-function createYearFolder(pastSessionsFolder) {
+function start() {
 
-    var myTitle = String(date.getFullYear() + " Sessions");
+    date = new Date();
+    var sessionsFolderName = "Session Snapshots";
 
-    // Get the current year folder
-    chrome.bookmarks.search({ title: myTitle, "url": undefined }, function (results) {
+    // Get the past sessions folder
+    chrome.bookmarks.search({ title: sessionsFolderName, "url": undefined }, function (results) {
 
         if (results.length == 0) {
-            // create current year folder
-            log("current year folder doesn't exist. Creating...")
+            // Create past sessions folder
+            log("Sessions bookmark folder doesn't exist. Creating...")
 
             chrome.bookmarks.create(
-                { "parentId": pastSessionsFolder.id, "title": myTitle },
-                createSessionFolder
+                { "title": sessionsFolderName },
             );
 
         } else {
             createSessionFolder(results[0]);
-        }
-
-    })
-
-}
-
-
-function start() {
-
-    date = new Date();
-
-    // Get the past sessions folder
-    chrome.bookmarks.search({ title: "past sessions", "url": undefined }, function (results) {
-
-        // for(var i=0; i<results.length; i++) {
-        //     log(results[i].title);
-        // }
-
-        if (results.length == 0) {
-            // create past sessions folder
-            log("past sessions folder doesn't exist. Creating...")
-
-            chrome.bookmarks.create(
-                { "title": "past sessions" },
-                createYearFolder
-            );
-
-        } else {
-            createYearFolder(results[0]);
         }
 
     })

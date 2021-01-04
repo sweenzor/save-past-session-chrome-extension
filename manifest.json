@@ -1,7 +1,7 @@
 {
-  "name": "save session",
-  "version": "1.0",
-  "description": "saves your session",
+  "name": "Save Session",
+  "version": "1.1",
+  "description": "Saves your session",
   "permissions": ["tabs", "bookmarks"],
   "browser_action": {
     "default_title": "Save Session",
