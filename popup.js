@@ -125,6 +125,7 @@ function start() {
 
             chrome.bookmarks.create(
                 { "title": sessionsFolderName },
+                createSessionFolder
             );
 
         } else {
